@@ -1,0 +1,164 @@
+diff --git a/ADBench/plot_graphs.py b/ADBench/plot_graphs.py
+index 48fa729..60847dc 100644
+--- a/ADBench/plot_graphs.py
++++ b/ADBench/plot_graphs.py
+@@ -47,6 +47,8 @@ tool_styles = {
+     "ManualEigen": ("k", "s", "C++, Manual Eigen"),
+     "ManualEigenVector": ("k", "D", "C++, Manual Eigen Vector"),
+     "Tapenade": ("y", "*", "C, Tapenade"),
++    "EnzymeCIR": ("m", "^", "C++, Enzyme (ClangIR + MLIR)"),
++    "EnzymeLLVM": ("darkorange", "^", "C++, Enzyme (LLVM)"),
+ 
+     # .Net tools
+     "DiffSharpModule": ("grey", "D", "F#, DiffSharp"),
+diff --git a/src/python/shared/BAData.py b/src/python/shared/BAData.py
+index c3944af..bcfde9d 100644
+--- a/src/python/shared/BAData.py
++++ b/src/python/shared/BAData.py
+@@ -12,17 +12,17 @@ from shared.output_utils import save_errors_to_file, objective_file_name,\
+ 
+ @dataclass
+ class BAInput:
+-    cams:       np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    x:          np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    w:          np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    obs:        np.ndarray = field(default = np.empty(0, dtype = np.int32))
+-    feats:      np.ndarray = field(default = np.empty(0, dtype = np.float64))
++    cams:       np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    x:          np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    w:          np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    obs:        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.int32))
++    feats:      np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+ @dataclass
+ class BAOutput:
+-    reproj_err: np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    w_err:      np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    J:          BASparseMat = field(default = BASparseMat())
++    reproj_err: np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    w_err:      np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    J:          BASparseMat = field(default_factory = BASparseMat)
+ 
+     def save_output_to_file(
+         self,
+diff --git a/src/python/shared/GMMData.py b/src/python/shared/GMMData.py
+index 8f5ea91..bcb7ce9 100644
+--- a/src/python/shared/GMMData.py
++++ b/src/python/shared/GMMData.py
+@@ -10,16 +10,16 @@ from shared.output_utils import save_value_to_file, objective_file_name,\
+ 
+ @dataclass
+ class GMMInput:
+-    alphas:     np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    means:      np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    icf:        np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    x:          np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    wishart:    Wishart = field(default = Wishart())
++    alphas:     np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    means:      np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    icf:        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    x:          np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    wishart:    Wishart = field(default_factory = Wishart)
+ 
+ @dataclass
+ class GMMOutput:
+     objective: np.float64 = 0.0
+-    gradient: np.ndarray = field(default = np.empty(0, dtype = np.float64))
++    gradient: np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+     def save_output_to_file(
+         self,
+diff --git a/src/python/shared/HandData.py b/src/python/shared/HandData.py
+index c012746..8621487 100644
+--- a/src/python/shared/HandData.py
++++ b/src/python/shared/HandData.py
+@@ -18,23 +18,23 @@ class HandModel:
+     
+     # asssuming that parent is earlier in the order of bones
+     parents: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.int32))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.int32))
+ 
+     base_relatives: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.float64))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+     inverse_base_absolutes: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.float64))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+     base_positions: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.float64))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+     weights: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.float64))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+     
+     # two dimensional array with the second dimension equals to 3
+     triangles: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.int32))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.int32))
+ 
+     is_mirrored: \
+         bool = field(default = False)
+@@ -42,26 +42,26 @@ class HandModel:
+ @dataclass
+ class HandData:
+     model: \
+-        HandModel = field(default = HandModel())
++        HandModel = field(default_factory = HandModel)
+ 
+     correspondences: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.int32))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.int32))
+ 
+     points: \
+-        np.ndarray = field(default = np.empty(0, dtype = np.float64))
++        np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+ 
+ 
+ @dataclass
+ class HandInput:
+-    theta:      np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    data:       HandData = field(default = HandData())
+-    us:         np.ndarray = field(default = np.empty(0, dtype = np.float64))
++    theta:      np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    data:       HandData = field(default_factory = HandData)
++    us:         np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+ @dataclass
+ class HandOutput:
+-    objective:  np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    jacobian:   np.ndarray = field(default = np.empty(0, dtype = np.float64))
++    objective:  np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    jacobian:   np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+     def save_output_to_file(
+         self,
+diff --git a/src/python/shared/LSTMData.py b/src/python/shared/LSTMData.py
+index ebaaab7..6df4cac 100644
+--- a/src/python/shared/LSTMData.py
++++ b/src/python/shared/LSTMData.py
+@@ -9,15 +9,15 @@ from shared.output_utils import save_value_to_file, objective_file_name,\
+ 
+ @dataclass
+ class LSTMInput:
+-    main_params:   np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    extra_params:  np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    state:         np.ndarray = field(default = np.empty(0, dtype = np.float64))
+-    sequence:      np.ndarray = field(default = np.empty(0, dtype = np.float64))
++    main_params:   np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    extra_params:  np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    state:         np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
++    sequence:      np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+ @dataclass
+ class LSTMOutput:
+     objective:     np.float64 = 0.0
+-    gradient:      np.ndarray = field(default = np.empty(0, dtype = np.float64))
++    gradient:      np.ndarray = field(default_factory = lambda: np.empty(0, dtype = np.float64))
+ 
+     def save_output_to_file(
+         self,
